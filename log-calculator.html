@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>原木材积计算器</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--tx:#2b2218;--mut:#7a6c5c;--ac:#8a5a2b;--ac2:#2f7d5b;--bd:#e4dccf;--hd:#f2ebdf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1611;--card:#241e17;--tx:#f0e8dc;--mut:#a89a88;--ac:#d9a066;--ac2:#6fcf9f;--bd:#3a3126;--hd:#2d261d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1a1611;--card:#241e17;--tx:#f0e8dc;--mut:#a89a88;--ac:#d9a066;--ac2:#6fcf9f;--bd:#3a3126;--hd:#2d261d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.w{max-width:960px;margin:0 auto;padding:20px 14px 40px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);margin:0 0 16px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:820px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{background:var(--hd);font-weight:600;font-size:13px}
+th:first-child,td:first-child{text-align:center}
+input[type=number]{width:78px;padding:6px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit;text-align:right}
+button{font:inherit;padding:7px 14px;border-radius:8px;border:1px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer}
+button.g{background:transparent;color:var(--ac)}button.x{padding:2px 9px;border-color:var(--bd);color:var(--mut);background:transparent}
+.f{color:var(--ac)}.t{color:var(--ac2);font-weight:600}.mut{color:var(--mut)}
+tfoot td{font-weight:700;background:var(--hd)}
+textarea{width:100%;box-sizing:border-box;height:70px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px;font:inherit}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.note{font-size:12.5px;color:var(--mut);line-height:1.7}
+code{background:var(--hd);padding:1px 5px;border-radius:4px;font-size:12.5px}
+@media(max-width:720px){
+.w{padding:14px 10px 32px}h1{font-size:19px}
+.card{padding:10px}
+.sc{overflow:visible}
+table{min-width:0}
+thead{display:none}
+table,tbody,tfoot,tr,td{display:block}
+tbody tr{position:relative;border:1px solid var(--bd);border-radius:10px;padding:8px 12px;margin-bottom:10px;background:var(--card)}
+td{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:right;border:none;padding:5px 0}
+td::before{content:attr(data-label);color:var(--mut);font-size:13px;text-align:left;white-space:normal}
+td:empty{display:none}
+tbody td:first-child{justify-content:flex-start;gap:4px;font-weight:700;padding-bottom:6px}
+tbody td:first-child::before{content:"第";color:var(--tx);font-size:15px}
+tbody td:first-child::after{content:"条"}
+tbody td:last-child{position:absolute;top:8px;right:10px;padding:0}
+tbody td:last-child::before{content:none}
+tbody td:nth-child(6),tbody td:nth-child(8),tbody td:nth-child(10){border-top:1px dashed var(--bd);margin-top:4px;padding-top:9px}
+input[type=number]{width:120px;font-size:16px;padding:8px}
+button{padding:10px 14px}
+.bar button{flex:1}
+tfoot tr{background:var(--hd);border-radius:10px;padding:8px 12px}
+tfoot td{background:none}
+tfoot td:first-child{justify-content:center;font-size:0;padding-bottom:6px}
+tfoot td:first-child::before{content:"合计汇总";font-size:15px;color:var(--tx);font-weight:700}
+textarea{font-size:16px;height:90px}
+}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>🪵 原木材积计算器</h1>
+<p class="sub">输入一组原木数据，同时对比“公式计算”与“原木材积表（GB/T 4814）”的结果</p>
+
+<div class="card">
+<div class="sc"><table>
+<thead><tr><th>#</th><th>小头直径 (cm)</th><th>大头直径 (cm)<br><small class="mut">选填</small></th><th>长度 (m)</th><th>根数</th><th>检尺径</th><th>检尺长</th><th>公式 单根</th><th>公式 合计</th><th>材积表 单根</th><th>材积表 合计</th><th>差值</th><th></th></tr></thead>
+<tbody id="tb"></tbody>
+<tfoot><tr><td colspan="4">合计</td><td id="sN">0</td><td></td><td></td><td></td><td id="sF" class="f">0</td><td></td><td id="sT" class="t">0</td><td id="sD">0</td><td></td></tr></tfoot>
+</table></div>
+<div class="bar"><button id="add">＋ 添加一行</button><button class="g" id="clr">清空</button></div>
+</div>
+
+<div class="card">
+<b>批量粘贴</b> <span class="mut">（每行：小头直径,长度,根数,大头直径；根数默认 1，大头直径可省略）</span>
+<textarea id="ta" placeholder="20,4,10&#10;26,6,5,30&#10;8,3,20"></textarea>
+<div class="bar"><button class="g" id="imp">导入并替换</button></div>
+</div>
+
+<div class="card note">
+<b>计算说明</b><br>
+<b>公式计算</b>（使用原始直径与长度，不取整）：<br>· 填写了大头直径 → 平均直径法（标记“平均”）：<code>V = π/4 × ((D小+D大)/2)² × L ÷ 10000</code><br>· 未填大头直径 → 圆柱近似（标记“圆柱”）：<code>V = π/4 × D小² × L ÷ 10000</code>，结果通常偏小。<br>
+<b>材积表</b>：按国标原木材积表的规则先“进级”——检尺径 4–12 cm 按 1 cm 去尾取整，14 cm 及以上按 2 cm 去尾取偶；检尺长按 0.2 m 去尾；再代入国标材积公式并保留 3 位小数。<br>
+小径 (4–12 cm)：<code>V = 0.7854·L·(D+0.45L+0.2)² ÷ 10000</code><br>
+大径 (≥14 cm)：<code>V = 0.7854·L·[D+0.5L+0.005L²+0.000125·L·(14−L)²·(D−10)]² ÷ 10000</code><br>
+适用范围：检尺径 ≥ 4 cm，检尺长 2–30 m，超出范围显示“—”。材积表数值由上述公式生成，用于重要交易前请与官方 GB/T 4814-2013 纸质或电子版核对。
+</div>
+</div>
+
+<script>
+let rows=[{d:20,u:'',l:4,n:1},{d:26,u:30,l:6,n:1},{d:8,u:'',l:3,n:1}];
+const $=id=>document.getElementById(id);
+const r3=x=>Math.round(x*1000+1e-9)/1000;
+function std(D,L){
+  const d=D<=12?Math.floor(D+1e-9):Math.floor(D/2+1e-9)*2;
+  const l=Math.floor(L/0.2+1e-9)*0.2;
+  return{d,l:Math.round(l*10)/10};
+}
+function tbl(d,l){
+  if(!(d>=4)||!(l>=2)||l>30)return null;
+  const v=d<=12?0.7854*l*Math.pow(d+0.45*l+0.2,2)/1e4
+    :0.7854*l*Math.pow(d+0.5*l+0.005*l*l+0.000125*l*Math.pow(14-l,2)*(d-10),2)/1e4;
+  return r3(v);
+}
+function calc(r){
+  const D=+r.d,L=+r.l,U=+r.u,n=(r.n===''||r.n==null)?1:(+r.n||0);
+  if(!(D>0)||!(L>0))return null;
+  const m=U>0,Dm=m?(D+U)/2:D;
+  const f=Math.PI/4*Dm*Dm*L/1e4;
+  const s=std(D,L),t=tbl(s.d,s.l);
+  return{f,m,fs:f*n,s,t,ts:t==null?null:t*n,n};
+}
+function fmt(x,k=4){return x==null?'—':x.toFixed(k)}
+function build(){
+  $('tb').innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td>
+  <td><input type="number" step="0.1" min="0" data-i="${i}" data-k="d" value="${r.d}"></td>
+  <td><input type="number" step="0.1" min="0" data-i="${i}" data-k="u" value="${r.u}" placeholder="选填"></td>
+  <td><input type="number" step="0.1" min="0" data-i="${i}" data-k="l" value="${r.l}"></td>
+  <td><input type="number" step="1" min="0" data-i="${i}" data-k="n" value="${r.n}"></td>
+  <td id="a${i}"></td><td id="b${i}"></td><td id="c${i}" class="f"></td><td id="e${i}" class="f"></td>
+  <td id="g${i}" class="t"></td><td id="h${i}" class="t"></td><td id="k${i}" class="mut"></td>
+  <td><button class="x" data-del="${i}">✕</button></td></tr>`).join('');
+  const LB=['#','小头直径 (cm)','大头直径 (cm) 选填','长度 (m)','根数','检尺径','检尺长','公式 单根 (m³)','公式 合计 (m³)','材积表 单根 (m³)','材积表 合计 (m³)','差值 (m³)',''];
+  document.querySelectorAll('#tb tr').forEach(tr=>[...tr.children].forEach((td,k)=>td.dataset.label=LB[k]));
+  [['sN','总根数'],['sF','公式合计 (m³)'],['sT','材积表合计 (m³)'],['sD','差值 (m³)']].forEach(([i,t])=>$(i).dataset.label=t);
+  update();
+}
+function update(){
+  let N=0,F=0,T=0;
+  rows.forEach((r,i)=>{
+    const c=calc(r),set=(p,v)=>{const e=$(p+i);if(e)e.textContent=v};
+    if(!c){['a','b','c','e','g','h','k'].forEach(p=>set(p,'—'));return}
+    N+=c.n;F+=c.fs;
+    set('a',c.s.d);set('b',c.s.l.toFixed(1));
+    $('c'+i).innerHTML=fmt(c.f)+' <small class="mut">'+(c.m?'平均':'圆柱')+'</small>';set('e',fmt(c.fs,3));
+    set('g',fmt(c.t,3));set('h',fmt(c.ts,3));
+    if(c.ts!=null){T+=c.ts;set('k',(c.fs-c.ts>=0?'+':'')+(c.fs-c.ts).toFixed(3))}else set('k','—');
+  });
+  $('sN').textContent=N;$('sF').textContent=F.toFixed(3);$('sT').textContent=T.toFixed(3);
+  const d=F-T;$('sD').textContent=(d>=0?'+':'')+d.toFixed(3);
+}
+$('tb').addEventListener('input',e=>{const t=e.target;if(t.dataset.k){rows[+t.dataset.i][t.dataset.k]=t.value;update()}});
+$('tb').addEventListener('click',e=>{const i=e.target.dataset.del;if(i!=null){rows.splice(+i,1);build()}});
+$('add').onclick=()=>{rows.push({d:'',u:'',l:'',n:1});build()};
+$('clr').onclick=()=>{rows=[{d:'',u:'',l:'',n:1}];build()};
+$('imp').onclick=()=>{
+  const out=$('ta').value.split(/\n/).map(s=>s.trim().split(/[\s,，;；\t]+/).map(Number)).filter(a=>a.length>=2&&a[0]>0&&a[1]>0)
+    .map(a=>({d:a[0],u:a[3]>0?a[3]:'',l:a[1],n:a[2]>=0?a[2]:1}));
+  if(out.length){rows=out;build()}
+};
+build();
+</script>
+</body>
+</html>
